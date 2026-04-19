@@ -267,9 +267,7 @@ hackathon if the maintainers are open to the multi-feed use case.
 - Example Oracle Address with 4 Tokens: https://preprod.cardanoscan.io/address/addr_test1wqww3xgvvt09y826qq5xqj8267yvhaq7xprdeeyrhw7a6dq2fszvh
 
 - Example Order Transaction with Mint & Metadata: https://preprod.cardanoscan.io/transaction/b901a4b28b8ec124d6db601891c694c346a5f69371104e09f5e3169105722c21
-```
 
----
 
 ## Disclaimer 
 
