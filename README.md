@@ -25,9 +25,9 @@ In real-world B2B supply chains, the two numbers a buyer most needs to trust —
 - **ERP vs. warehouse floor.** Accounting shows 12,000 kg of lithium carbonate; the warehouse just shipped 3,000 kg an hour ago and the movement hasn't been booked yet. Buyers see stale figures and commit to orders that can't be filled, or walk away from stock that's actually available.
 - **Price lists vs. market reality.** Commodity prices move on energy costs, FX, freight, and spot shortages. A PDF quote from last week is already wrong; a CSV pulled this morning may not reflect the raw-material index spike from two hours ago.
 - **No shared source of truth between buyer and supplier.** Both parties reconcile the same facts from their own systems, email attachments, and phone calls. Disputes over "what was agreed at what price for how much" are resolved by whoever has the better paperwork, not by an attested fact.
-- **Every pair reinvents the pipe.** Each buyer–supplier relationship rebuilds the same EDI/API bridge from scratch. There is no neutral channel where an inventory reading is published once and consumable by anyone authorized to see it — so integration cost scales with the number of counterparties, not the number of facts.
+- **Every pair reinvents the pipe.** Each buyer–supplier relationship rebuilds the same EDI/API bridge from scratch. There is no neutral channel where an inventory reading is published once and consumable by anyone authorized to see it so integration cost scales with the number of counterparties, not the number of facts.
 
-The result: orders that fail at fulfilment, pricing disputes after the fact, and trust that depends on bilateral integrations rather than on verifiable data.
+The result: orders that fail at fulfilment, pricing disputes after the fact, and trust that depends on bilateral integrations rather than on chain verifiable data.
 
 ### The QUANTIX Bet
 
@@ -49,16 +49,14 @@ for that supplier. The mint is valid only if the same transaction:
   reference inputs (both decoded as `FeedDatum(AggStateVariant(GenericData))`)
 - Feeds are still inside their validity window (`valid_through_ms ≥ tx lower
   bound`)
-- Inventory feed value ÷ 1,000,000 ≥ requested grams (Charli3 scales values
-  by 1e6)
+- Inventory feed value ≥ requested grams
 - Price feed value ≤ redeemer's `max_price_lovelace`
 - Transaction upper bound ≤ redeemer's `deadline_ms`
 - One output pays the supplier at least `requested_g × price` lovelace
 - CIP-20 metadata label 674 carries `{ c3supply: { grams, order_id } }` so
   the supplier's ERP chain-watcher can decrement inventory precisely
 
-No lock-and-spend dance, no escrow UTxO, no second transaction. The buyer
-either succeeds atomically or the Tx doesn't settle. Receipt NFT is the
+The buyer either succeeds atomically or the Tx doesn't settle. Receipt NFT is the
 on-chain proof-of-purchase.
 
 Each supplier exposes a REST ERP mock. Charli3 nodes poll the ERP via the
@@ -103,7 +101,7 @@ contracts/aiken/              order_mint.ak (Plutus V3) + helpers + tests
 services/charli3-bridge/      FastAPI — Blockfrost read + ODV coordinator proxy
 services/supplier-erp-mock/   FastAPI — per-supplier ERP mock (3 instances)
 services/charli3-fork/        Three git submodules (see "Forks" below)
-scripts/                      Deploy, funding, smoke-test utilities
+scripts/                      Deployment scripts
 docker-compose.yml            Full local stack
 secrets/                      Wallets + node keys (gitignored)
 ```
@@ -182,26 +180,6 @@ Endpoints:
 - ERPs: `http://localhost:{8001,8002,8003}`
 - Coordinator nodes: `http://localhost:{8101,8201,8301}`
 
-### Demo flow
-
-1. Open the webapp. The **Suppliers** tab lists all configured suppliers with
-   live inventory and current unit price, pulled from the on-chain AggState
-   UTxOs via the bridge (values are descaled from Charli3's 1e6 convention).
-2. *(Optional — needs the full stack.)* Click **Refresh Feed** on a row to
-   trigger a real ODV round: bridge → coordinator node → 2 peer nodes → signed
-   and submitted `preprod` Tx. A 3-minute UI cooldown prevents hammering the
-   validity window; a `not_yet_expired` response is surfaced as a human note.
-3. Click **Buy**, enter a quantity in grams. CAP runs `buyFromSupplier`:
-   fetches both feeds, computes `paidLovelace = requestedG × livePrice`, and
-   builds a `BuildMintTransaction` with both feeds as reference inputs, a
-   CIP-20 metadata block (label 674, `c3supply.grams + order_id`), and a 6h
-   validity window. The order row is inserted in status `executing`.
-4. The wallet opens, buyer signs (CIP-30 partial-sign). CAP calls
-   `submitSigned` → ODATANO verifies and submits to `preprod`, the buy tx
-   lands atomically — receipt NFT minted, supplier paid, inventory feed
-   consumed as reference input. Order flips `executing → executed`.
-5. The **My Buys** tab shows the receipt with a Cardanoscan link.
-
 ---
 
 ## Charli3 extension story
@@ -243,24 +221,6 @@ backward compatibility.
 
 - Fork: [`maxalexweber1/charli3-pull-oracle-sdk`](https://github.com/maxalexweber1/charli3-pull-oracle-sdk) `c3-supply/multi-aggstate`
 - 2 files touched, +28 / -5 LOC
-
-### 4. Fork patches (operational, not upstream-worthy)
-
-Five bugs hit during integration — fixed locally in the node fork:
-
-1. `BlockFrostBackend` hard-codes the mainnet URL → derive base URL from the
-   project-ID prefix
-2. Network-string check rejected `"preprod"` / `"preview"`
-3. YAML `<%= VAR %>` resolver was wired up but never called
-4. `ChainQueryConfig.blockfrost` stayed a dict instead of a dataclass
-5. Blockfrost `evaluate_tx_cbor` collapsed empty `ScriptFailures` — route
-   through Ogmios JSON-RPC instead
-
-Plus a coordinator-endpoint patch: structured `409 not_yet_expired` response
-when the AggState is still inside its validity window (upstream returned a
-generic 500, so the bridge couldn't distinguish cooldown from failure).
-
----
 
 ## Custom order mint validator (`contracts/aiken/validators/order_mint.ak`)
 
@@ -316,7 +276,7 @@ asset, empty reference inputs, and non-AggState datum rejection.
 | [`charli3-pull-oracle-sdk`](https://github.com/maxalexweber1/charli3-pull-oracle-sdk) | `c3-supply/multi-aggstate` | `aggstate_asset_name` kwarg in tx builder |
 
 All three are candidates for upstream PRs to `Charli3-Official/*` after the
-hackathon.
+hackathon if the maintainers are open to the multi-feed use case.
 
 ---
 
@@ -330,10 +290,22 @@ hackathon.
 - **Contract** — custom Plutus V3 validator in Aiken
 - **Data sources** — FastAPI ERP mocks (Python 3.11)
 - **Local stack** — Docker Compose (9 oracle nodes + 3 ERPs + bridge + CAP)
+- **Wallet interaction** — CIP-30 (Eternl / Lace)
+---
 
+## Demo
+
+- 📸 Screenshots of the full Buy + Refresh-Feed flow: [demo_screenshots.md](./demo_screenshots.md)
+- 🎥 Buy-flow walkthrough video: [youtu.be/g3_FExeFyH4](https://youtu.be/g3_FExeFyH4)
 
 ---
 
+## Disclaimer 
+
+1. Tis a hackathon submission, not production quality. Do not reuse without a thorough audit and refactoring. The code in this repo is intended to demonstrate the feasibility and value of the core idea - on-chain attested inventory and price feeds as a primitive for supply-chain commerce rather than to serve as a production-ready implementation. The architecture, code structure, and security assumptions would all need to be revisited for a real deployment. In particular, the custom minting policy and the oracle's trust  model are simplified for the sake of the hackathon and would require significant hardening for production use.
+
+2. AI was used in the development of this project and may have contributed to some of the code, documentation, and commit messages. The project was developed by Max Weber with the assistance of Claude Opus 4.7 for code generation and documentation.
+
 ## License
 
-Apache 2.0.
+MIT — see [LICENSE](./LICENSE).

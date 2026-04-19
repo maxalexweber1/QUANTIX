@@ -85,7 +85,7 @@ sap.ui.define([
 
     return {
       supplierName: supplier.name,
-      label: isInv ? "Warehouse Ops — Inventory Feed" : "Pricing Desk — Price Feed",
+      label: isInv ? "Warehouse Feed" : "Pricing Desk Feed",
       icon: isInv ? "sap-icon://inventory" : "sap-icon://money-bills",
       displayValue: displayValue,
       displayUnit: displayUnit,
@@ -98,10 +98,6 @@ sap.ui.define([
       assetName: assetName || "(none)",
       policyId: policyId || "",
       policyShort: policyId ? policyId.slice(0, 14) + "…" + policyId.slice(-6) : "—",
-      // refTxHash lives on the bridge, not on CAP's Supplier entity — an
-      // extension point: a future Suppliers READ hook could enrich each
-      // feed with refTxHash and refOutputIndex so we can link the actual
-      // AggState UTxO on Cardanoscan.
       refTxHash: null,
       refTxShort: "—",
       refTxUrl: "",

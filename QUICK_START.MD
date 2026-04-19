@@ -16,6 +16,13 @@ cp .env.example .env
 pnpm install
 ```
 
+Additionally, open `apps/cap/package.json` and replace the placeholder
+`"your_blockfrost_api_key_here"` under `cds.requires.odatano-core.blockfrostApiKey`
+with your real Blockfrost `preprod` project ID. ODATANO reads its Blockfrost
+credential from the CAP config (not from `.env`), so CAP will not start
+correctly until this is set.
+
+
 ### Running the full stack (local dev)
 
 ```bash
