@@ -33,8 +33,6 @@ The result: orders that fail at fulfilment, pricing disputes after the fact, and
 
 A supplier's own ERP reading, signed by a decentralized oracle quorum and posted on-chain, is a stronger foundation for a buyer's purchase commitment than any of the above. The order contract itself enforces the match at execution time and no one gets to "forget" that inventory was short or that the price had moved.
 
-In RWA terms: the on-chain asset here is not a wrapped commodity but the **verifiable claim about it** "Supplier A has 12,000 kg of lithium carbonate at price P as of block N, attested by 2-of-3 oracle signers." Every commodity trade, letter of credit, and inventory-backed loan already depends on this claim just in a less reliable, off-chain form. QUANTIX makes it a first-class Cardano primitive that smart contracts can read and enforce against.
-
 ---
 
 ## What it does
@@ -94,12 +92,12 @@ round with threshold signatures.
 ## Repository layout
 
 ```
-apps/cap/                     SAP CAP app — Suppliers, Orders, OData actions
+apps/cap/                     SAP CAP App: Suppliers, Orders, OData actions
 packages/shared/              Shared TS types (MintRedeemer, feeds, …)
 packages/contracts-ts/        Mint-redeemer encoder + blueprint wrapper
 contracts/aiken/              order_mint.ak (Plutus V3) + helpers + tests
-services/charli3-bridge/      FastAPI — Blockfrost read + ODV coordinator proxy
-services/supplier-erp-mock/   FastAPI — per-supplier ERP mock (3 instances)
+services/charli3-bridge/      FastAPI: Blockfrost read + ODV coordinator proxy
+services/supplier-erp-mock/   FastAPI: per-supplier ERP mock (3 instances)
 services/charli3-fork/        Three git submodules (see "Forks" below)
 scripts/                      Deployment scripts
 docker-compose.yml            Full local stack
@@ -114,17 +112,17 @@ Start here, then drill into the subcomponent docs as needed.
 
 **This repo:**
 
-- [Quick start](./QUICK_START.MD) — prerequisites, `.env`, local dev boot
-- [`contracts/aiken/README.md`](./contracts/aiken/README.md) — order-mint Plutus V3 validator, build / test / blueprint publish
-- [`services/charli3-bridge/README.md`](./services/charli3-bridge/README.md) — on-chain feed read + ODV orchestrator (dual-coordinator routing, tx-chaining)
-- [`services/supplier-erp-mock/README.md`](./services/supplier-erp-mock/README.md) — per-supplier ERP mock with optional jitter + chain-watch
-- [`services/charli3-fork/configs/README.md`](./services/charli3-fork/configs/README.md) — 9-container multi-feed node layout, per-supplier oracle deploy sequence
+- [Quick start](./QUICK_START.MD) prerequisites, `.env`, local dev boot
+- [`contracts/aiken/README.md`](./contracts/aiken/README.md) order-mint Plutus V3 validator, build / test / blueprint publish
+- [`services/charli3-bridge/README.md`](./services/charli3-bridge/README.md) on-chain feed read + ODV orchestrator (dual-coordinator routing, tx-chaining)
+- [`services/supplier-erp-mock/README.md`](./services/supplier-erp-mock/README.md) per-supplier ERP mock with optional jitter + chain-watch
+- [`services/charli3-fork/configs/README.md`](./services/charli3-fork/configs/README.md) 9-container multi-feed node layout, per-supplier oracle deploy sequence
 
 **Forked upstream components** (live under `services/charli3-fork/` as submodules):
 
-- [`charli3-pull-oracle-contracts/README.md`](./services/charli3-fork/charli3-pull-oracle-contracts/README.md) — Aiken oracle validator (our `c3-supply/asset-prefix` branch)
-- [`charli3-pull-oracle-node/README.md`](./services/charli3-fork/charli3-pull-oracle-node/README.md) — Python ODV node (our `c3-supply/multi-feed` branch)
-- [`charli3-pull-oracle-sdk/README.md`](./services/charli3-fork/charli3-pull-oracle-sdk/README.md) — off-chain SDK (our `c3-supply/multi-aggstate` branch)
+- [`charli3-pull-oracle-contracts/README.md`](./services/charli3-fork/charli3-pull-oracle-contracts/README.md) Aiken oracle validator (our `c3-supply/asset-prefix` branch)
+- [`charli3-pull-oracle-node/README.md`](./services/charli3-fork/charli3-pull-oracle-node/README.md) Python ODV node (our `c3-supply/multi-feed` branch)
+- [`charli3-pull-oracle-sdk/README.md`](./services/charli3-fork/charli3-pull-oracle-sdk/README.md) off-chain SDK (our `c3-supply/multi-aggstate` branch)
 
 ---
 
@@ -133,11 +131,11 @@ Start here, then drill into the subcomponent docs as needed.
 Three oracle deployments, each with a shared policy and two distinct
 aggregation-state UTxOs.
 
-| Supplier        | Policy ID                        | Oracle Address               |
-| --------------- | -------------------------------- | ---------------------------- |
-| A  Lithium     | `78adae0debdf4770…d7947ec622`     | `addr_test1wqww3xgv…q2fszvh` |
-| B  Cobalt      | `7e3cc787cd71c68e…901dbd081f`     | `addr_test1wpk8epwp…cthysxc` |
-| C  Rare-Earth  | `dc6ffa6e4ed0ae23…510a37ed9`      | `addr_test1wp7jh3d2…s9n8kx3` |
+| Supplier       | Oracle Policy ID                                           | Oracle Address                                                    | Order-Mint Policy ID                                       |
+| -------------- | ---------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------- |
+| A  Lithium     | `78adae0debdf47708f49b5bae9b3ee5eae053ce7b86874d7947ec622` | `addr_test1wqww3xgvvt09y826qq5xqj8267yvhaq7xprdeeyrhw7a6dq2fszvh` | `409e01760341b2554d6ba7d1ec403c7410c48de0f2d1047df1bee41e` |
+| B  Cobalt      | `7e3cc787cd71c68ecc08274cff9596be9e2951d106c29b901dbd081f` | `addr_test1wpk8epwpmshm4d4s3p40p9vkjhmu8e549xvwyl2njjrzkjcthysxc` | `5d418b9d2f5801ec76d05a73167abafb925a5ae68fc6f721d73b47f0` |
+| C  Rare-Earth  | `dc6ffa6e4ed0ae23697d5d33e4aa0f4ac020b5c78d94209510a37ed9` | `addr_test1wp7jh3d2drrlexhmckgdjc70spsvuyemt8s77xkk0h59sds9n8kx3` | `c8b55b80d1d10df1f8c86b69b6acb3e805419442f114987edfea2cb7` |
 
 Six live feeds (inventory + price per supplier) populated via ODV rounds with
 all 3 node keys.
@@ -295,8 +293,13 @@ hackathon if the maintainers are open to the multi-feed use case.
 
 ## Demo
 
-- 📸 Screenshots of the full Buy + Refresh-Feed flow: [demo_screenshots.md](./demo_screenshots.md)
-- 🎥 Buy-flow walkthrough video: [youtu.be/g3_FExeFyH4](https://youtu.be/g3_FExeFyH4)
+- Screenshots of the full Buy + Refresh-Feed flow: [demo_screenshots.md](./demo_screenshots.md)
+- Buy-flow walkthrough video: [youtu.be/g3_FExeFyH4](https://youtu.be/g3_FExeFyH4)
+
+- Example Oracle Address with 4 Tokens: https://preprod.cardanoscan.io/address/addr_test1wqww3xgvvt09y826qq5xqj8267yvhaq7xprdeeyrhw7a6dq2fszvh
+
+- Example Order Transaction with Mint & Metadata: https://preprod.cardanoscan.io/transaction/b901a4b28b8ec124d6db601891c694c346a5f69371104e09f5e3169105722c21
+```
 
 ---
 
@@ -306,6 +309,5 @@ hackathon if the maintainers are open to the multi-feed use case.
 
 2. AI was used in the development of this project and may have contributed to some of the code, documentation, and commit messages. The project was developed by Max Weber with the assistance of Claude Opus 4.7 for code generation and documentation.
 
-## License
-
-MIT — see [LICENSE](./LICENSE).
+## License 
+MIT License: [MIT](./LICENSE)

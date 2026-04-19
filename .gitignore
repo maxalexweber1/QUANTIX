@@ -80,12 +80,5 @@ logs/
 plan.md
 
 # ─── One-time / local-only scripts (not part of the referenced flow) ─
-scripts/charli3-shell.sh
-scripts/deploy-supplier.sh
-scripts/deploy-supplier-a.sh
-scripts/fund-nodes.py
-scripts/gen-wallets.py
-scripts/odv-first-round.py
-scripts/send-funder-to-base.py
 scripts/send-tada.py
 scripts/split-buyer-utxo.py
