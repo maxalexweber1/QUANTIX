@@ -271,7 +271,7 @@ hackathon if the maintainers are open to the multi-feed use case.
 
 ## Disclaimer 
 
-1. Tis a hackathon submission, not production quality. Do not reuse without a thorough audit and refactoring. The code in this repo is intended to demonstrate the feasibility and value of the core idea - on-chain attested inventory and price feeds as a primitive for supply-chain commerce rather than to serve as a production-ready implementation. The architecture, code structure, and security assumptions would all need to be revisited for a real deployment. In particular, the custom minting policy and the oracle's trust  model are simplified for the sake of the hackathon and would require significant hardening for production use.
+1. This is a hackathon submission, not production quality. Do not reuse without a thorough audit and refactoring. The code in this repo is intended to demonstrate the feasibility and value of the core idea - on-chain attested inventory and price feeds as a primitive for supply-chain commerce rather than to serve as a production-ready implementation. The architecture, code structure, and security assumptions would all need to be revisited for a real deployment. In particular, the custom minting policy and the oracle's trust  model are simplified for the sake of the hackathon and would require significant hardening for production use.
 
 2. AI was used in the development of this project and may have contributed to some of the code, documentation, and commit messages. The project was developed by Max Weber with the assistance of Claude Opus 4.7 for code generation and documentation.
 
