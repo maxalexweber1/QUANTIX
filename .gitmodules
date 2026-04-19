@@ -1,0 +1,12 @@
+[submodule "services/charli3-fork/charli3-pull-oracle-contracts"]
+	path = services/charli3-fork/charli3-pull-oracle-contracts
+	url = https://github.com/maxalexweber1/charli3-pull-oracle-contracts.git
+	branch = c3-supply/asset-prefix
+[submodule "services/charli3-fork/charli3-pull-oracle-node"]
+	path = services/charli3-fork/charli3-pull-oracle-node
+	url = https://github.com/maxalexweber1/charli3-pull-oracle-node.git
+	branch = c3-supply/multi-feed
+[submodule "services/charli3-fork/charli3-pull-oracle-sdk"]
+	path = services/charli3-fork/charli3-pull-oracle-sdk
+	url = https://github.com/maxalexweber1/charli3-pull-oracle-sdk.git
+	branch = c3-supply/multi-aggstate
