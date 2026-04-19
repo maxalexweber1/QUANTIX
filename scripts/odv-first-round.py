@@ -50,7 +50,11 @@ from pycardano.backend import blockfrost as _pbf
 _orig_evaluate = _pbf.BlockFrostChainContext.evaluate_tx_cbor
 
 
-OGMIOS_URL = os.environ.get("OGMIOS_URL", "http://35.209.192.203:1337")
+# Optional: route evaluate_tx_cbor through an Ogmios v6 JSON-RPC endpoint
+# to surface real ScriptFailure reasons (Blockfrost's evaluate-tx collapses
+# empty-detail failures into Namespace()). Set OGMIOS_URL in the env to
+# enable; leave unset to use Blockfrost's evaluate as usual.
+OGMIOS_URL = os.environ.get("OGMIOS_URL", "").strip()
 
 
 def _ogmios_evaluate(self, cbor):
@@ -106,7 +110,8 @@ def _ogmios_evaluate(self, cbor):
     return return_val
 
 
-_pbf.BlockFrostChainContext.evaluate_tx_cbor = _ogmios_evaluate
+if OGMIOS_URL:
+    _pbf.BlockFrostChainContext.evaluate_tx_cbor = _ogmios_evaluate
 from charli3_offchain_core.cli.config.reference_script import (
     ReferenceScriptConfig,
     UtxoReference,

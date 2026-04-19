@@ -67,21 +67,21 @@ round with threshold signatures.
 
 ## Architecture
 
-![alt text](image-1.png)
+![alt text](/assets/flow.png)
 
 **Development tracks:**
 
-- **Oracle track** — 3 oracles on `preprod` (one per supplier), each with a
+- **Oracle track** 3 oracles on `preprod` (one per supplier), each with a
   shared policy + settings + reward account but two distinct aggregation-state
   UTxOs (`C3AS_inventory`, `C3AS_price`). Required a fork of the upstream
   Charli3 Aiken validator (beacon-token prefix match) and of the Python node
   (multi-feed config + per-feed OdvService).
-- **App track** — SAP CAP service (`Suppliers`, `Orders`, Actions) using
+- **App track** SAP CAP service (`Suppliers`, `Orders`, Actions) using
   ODATANO as a CDS plugin. Suppliers UI shows live inventory/price, a
   Refresh-Feed button that triggers an ODV round end-to-end in ~3s, and a
   Buy button that round-trips through a CIP-30 wallet to an atomic mint Tx.
   My-Buys tab keeps the receipt history.
-- **Contract track** — custom `order_mint.ak` Plutus V3 minting policy,
+- **Contract track** Custom `order_mint.ak` Plutus V3 minting policy,
   parameterised with the supplier's `(inventory_policy, inventory_asset,
   price_policy, price_asset, supplier_payment_hash)`, reading both AggStates
   as reference inputs. 12 helper unit tests. Deployed per-supplier as a
@@ -113,6 +113,7 @@ Start here, then drill into the subcomponent docs as needed.
 **This repo:**
 
 - [Quick start](./QUICK_START.MD) prerequisites, `.env`, local dev boot
+- [`.env.example`](./.env.example) full template for the root `.env` — Blockfrost key, per-supplier oracle policies/addresses, node URLs, node mnemonics, supplier payment addresses, order-mint ref-script hashes. Copy to `.env` and fill in everything before booting the stack
 - [`contracts/aiken/README.md`](./contracts/aiken/README.md) order-mint Plutus V3 validator, build / test / blueprint publish
 - [`services/charli3-bridge/README.md`](./services/charli3-bridge/README.md) on-chain feed read + ODV orchestrator (dual-coordinator routing, tx-chaining)
 - [`services/supplier-erp-mock/README.md`](./services/supplier-erp-mock/README.md) per-supplier ERP mock with optional jitter + chain-watch
@@ -120,9 +121,9 @@ Start here, then drill into the subcomponent docs as needed.
 
 **Forked upstream components** (live under `services/charli3-fork/` as submodules):
 
-- [`charli3-pull-oracle-contracts/README.md`](./services/charli3-fork/charli3-pull-oracle-contracts/README.md) Aiken oracle validator (our `c3-supply/asset-prefix` branch)
-- [`charli3-pull-oracle-node/README.md`](./services/charli3-fork/charli3-pull-oracle-node/README.md) Python ODV node (our `c3-supply/multi-feed` branch)
-- [`charli3-pull-oracle-sdk/README.md`](./services/charli3-fork/charli3-pull-oracle-sdk/README.md) off-chain SDK (our `c3-supply/multi-aggstate` branch)
+- [`charli3-pull-oracle-contracts/README.md`](./services/charli3-fork/charli3-pull-oracle-contracts/README.md) Aiken oracle validator (my `c3-supply/asset-prefix` branch)
+- [`charli3-pull-oracle-node/README.md`](./services/charli3-fork/charli3-pull-oracle-node/README.md) Python ODV node (my `c3-supply/multi-feed` branch)
+- [`charli3-pull-oracle-sdk/README.md`](./services/charli3-fork/charli3-pull-oracle-sdk/README.md) off-chain SDK (my `c3-supply/multi-aggstate` branch)
 
 ---
 
@@ -144,39 +145,6 @@ Per-supplier order-mint policies (Plutus V3) deployed as reference scripts.
 Policy IDs are loaded from `.env` as `ORDER_MINT_POLICY_SUPPLIER_{A,B,C}` —
 each parameterised with that supplier's `(inventory_policy, inventory_asset,
 price_policy, price_asset, supplier_payment_hash)`.
-
----
-
-## Running the stack
-
-**Minimum — bridge + CAP only (buy flow works against existing on-chain
-feeds):**
-
-```bash
-bash scripts/start-all.sh
-# → bridge  :8000
-# → CAP     :4004
-# → webapp  http://localhost:4004/quantix/webapp/
-```
-
-The oracle nodes are **not** required for this path. The UI reads existing
-AggState UTxOs via Blockfrost through the bridge, and buys consume them as
-reference inputs. First CAP boot can take 30–60s (ODATANO indexer warmup).
-
-**Full stack — needed for the Refresh-Feed button:**
-
-```bash
-docker compose up          # 9 oracle nodes + 3 ERP mocks
-bash scripts/start-all.sh  # bridge + CAP on host
-```
-
-Endpoints:
-
-- Webapp: `http://localhost:4004/quantix/webapp/`
-- CAP OData: `http://localhost:4004/odata/v4/orders-service/`
-- Bridge: `http://localhost:8000`
-- ERPs: `http://localhost:{8001,8002,8003}`
-- Coordinator nodes: `http://localhost:{8101,8201,8301}`
 
 ---
 
@@ -280,20 +248,20 @@ hackathon if the maintainers are open to the multi-feed use case.
 
 ## Tech stack
 
-- **Framework** — SAP CAP (Node.js, CDS), Fiori/UI5 frontend
-- **Cardano I/O** — [`@odatano/core`](https://www.npmjs.com/package/@odatano/core)
+- **Framework:** SAP CAP (Node.js, CDS), Fiori/UI5 frontend
+- **Cardano I/O:** [`@odatano/core`](https://www.npmjs.com/package/@odatano/core)
   CDS plugin (Blockfrost + Buildooor / CSL tx builders)
-- **Oracle** — Charli3 pull-oracle stack (Aiken contracts + Python node +
+- **Oracle:** Charli3 pull-oracle stack (Aiken contracts + Python node +
   off-chain SDK), all three repos forked
-- **Contract** — custom Plutus V3 validator in Aiken
-- **Data sources** — FastAPI ERP mocks (Python 3.11)
-- **Local stack** — Docker Compose (9 oracle nodes + 3 ERPs + bridge + CAP)
-- **Wallet interaction** — CIP-30 (Eternl / Lace)
+- **Contract:** Custom Plutus V3 validator in Aiken
+- **Data sources:** FastAPI ERP mocks (Python 3.11)
+- **Local stack:** Docker Compose (9 oracle nodes + 3 ERPs + bridge + CAP)
+- **Wallet interaction:** CIP-30 (Eternl / Lace)
 ---
 
 ## Demo
 
-- Screenshots of the full Buy + Refresh-Feed flow: [demo_screenshots.md](./demo_screenshots.md)
+- Screenshots of the full Buy + Refresh-Feed flow: [DEMO.md](./DEMO.md)
 - Buy-flow walkthrough video: [youtu.be/g3_FExeFyH4](https://youtu.be/g3_FExeFyH4)
 
 - Example Oracle Address with 4 Tokens: https://preprod.cardanoscan.io/address/addr_test1wqww3xgvvt09y826qq5xqj8267yvhaq7xprdeeyrhw7a6dq2fszvh

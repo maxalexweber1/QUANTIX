@@ -1,8 +1,8 @@
-# C3-Supply local stack — D-05 architecture.
+# C3-Supply local stack
 #
 # One oracle deployment per supplier (3 total), each hosting 2 AggState
 # UTxOs distinguished by asset name (C3AS_inventory, C3AS_price) sharing
-# the same policy. Per supplier: 3 nodes signing BOTH feeds via our
+# the same policy. Per supplier: 3 nodes signing BOTH feeds via my
 # forked multi-feed node image.
 #
 # Dual-coordinator-per-supplier (narrative: separate data authorities):
@@ -214,7 +214,7 @@ services:
     ports: [ "8303:8000" ]
     networks: [c3-net]
 
-# ─── Disabled: CAP + Bridge run on host via scripts/start-all.sh ────
+# Disabled: CAP + Bridge run on host via scripts/start-all.sh for faster dev iteration; the bridge talks to the nodes via localhost:810x port forwards.
 # Re-enable here only if you specifically want the dockerized variant.
 #
 #  cap:

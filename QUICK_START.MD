@@ -10,17 +10,68 @@
 
 ```bash
 cp .env.example .env
-# Fill in BLOCKFROST_PROJECT_ID and, if running the full oracle stack,
-# the 9 node mnemonics + supplier payment addresses (see .env.example).
-
 pnpm install
 ```
 
-Additionally, open `apps/cap/package.json` and replace the placeholder
-`"your_blockfrost_api_key_here"` under `cds.requires.odatano-core.blockfrostApiKey`
-with your real Blockfrost `preprod` project ID. ODATANO reads its Blockfrost
-credential from the CAP config (not from `.env`), so CAP will not start
-correctly until this is set.
+[`.env.example`](./.env.example) is the authoritative template — **nothing
+works without it filled in**. At minimum you need:
+
+- `BLOCKFROST_PROJECT_ID` — `preprod` project ID
+- `OGMIOS_URL` reachable Ogmios v6 JSON-RPC endpoint. **Required** for
+  ODV rounds: every forked oracle node routes `evaluate_tx_cbor` through
+  Ogmios (Blockfrost's evaluate-tx swallows empty ScriptFailures, and
+  tx-chaining needs `additionalUtxo` forwarding for not-yet-confirmed
+  C3RA outputs). `scripts/odv-first-round.py` uses the same endpoint
+- `ORACLE_ADDRESSES`, `SUPPLIER_NODES`, `SUPPLIER_NODES_DOCKER` per-supplier
+  policy → oracle-address and policy → node-URL maps (bridge reads these to
+  locate AggState UTxOs and fan out ODV rounds)
+- `INVENTORY_POLICY_ID_SUPPLIER_{A,B,C}` / `PRICE_POLICY_ID_SUPPLIER_{A,B,C}`
+  and matching `*_ORACLE_ADDR_*` consumed by the mint-policy parameters
+- `REF_SCRIPT_ADDR_SUPPLIER_*` + `REF_SCRIPT_TX_HASH_SUPPLIER_*` — Charli3
+  ref-script UTxOs (one per supplier, populated after `deploy_settings`)
+- `ORDER_MINT_POLICY_SUPPLIER_*` + `ORDER_MINT_REFSCRIPT_TX_HASH_SUPPLIER_*`
+  + `*_OUTPUT_INDEX_*` per-supplier order-mint ref-scripts
+- `MNEMONIC_{A,B,C}_{1,2,3}` 9 node mnemonics (24 words each), required for
+  the full oracle stack to sign ODV rounds
+- `SUPPLIER_{A,B,C}_PAYMENT_ADDR` bech32 payment address per supplier (the
+  order-mint policy checks an output pays this hash)
+- `ERP_{A,B,C}_URL` ERP mock endpoints the nodes poll
+
+See the header comments in `.env.example` for each variable's purpose.
+
+### ODATANO Blockfrost key (CAP side)
+
+ODATANO runs as a CAP plugin and does **not** read `BLOCKFROST_API_KEY` from
+`.env` in this project. The Blockfrost credential must be set as a literal
+string in [`apps/cap/package.json`](./apps/cap/package.json) under
+`cds.requires.odatano-core.blockfrostApiKey`. `@sap/cds` does not expand
+`${...}` placeholders in custom config fields, so writing the raw value there
+is the most reliable path:
+
+```json
+{
+  "cds": {
+    "requires": {
+      "odatano-core": {
+        "network": "preprod",
+        "backends": ["blockfrost"],
+        "blockfrostApiKey": "preprod...your_key_here...",
+        "txBuilders": ["buildooor"],
+        "primaryTimeoutMs": 30000,
+        "fallbackTimeoutMs": 60000,
+        "indexTtlMs": 3600000
+      }
+    }
+  }
+}
+```
+
+Replace the `"your_key_here"` placeholder with your real
+`preprod` project ID. CAP will not start correctly until this is set.
+
+The Python side (bridge, ERP mocks, docker nodes, deploy scripts) reads the
+same key from `BLOCKFROST_PROJECT_ID` in `.env` — that one is separate and
+still required.
 
 
 ### Running the full stack (local dev)
@@ -36,7 +87,7 @@ bash scripts/start-all.sh  # starts bridge + CAP on host
 
 Endpoints:
 
-- Webapp: `http://localhost:4004/quantix/webapp/` (Suppliers + My Buys tabs)
+- Webapp: `http://localhost:4004/quantix/webapp/` (Suppliers + My Buys tabs + Orcale Feeds)
 - CAP OData: `http://localhost:4004/odata/v4/orders-service/`
 - Bridge: `http://localhost:8000`
 - ERPs: `http://localhost:8001` (A), `http://localhost:8002` (B), `http://localhost:8003` (C)
