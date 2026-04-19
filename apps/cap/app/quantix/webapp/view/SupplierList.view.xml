@@ -1,0 +1,69 @@
+<mvc:View
+  controllerName="quantix.controller.SupplierList"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  height="100%">
+
+  <Page title="Suppliers" showNavButton="false">
+    <headerContent>
+      <Button icon="sap-icon://refresh" tooltip="Refresh list" press="onRefresh"/>
+    </headerContent>
+
+    <content>
+      <Table id="supplierTable"
+             items="{/Suppliers}"
+             growing="true"
+             growingThreshold="50"
+             updateFinished="onListUpdateFinished"
+             noDataText="No suppliers configured.">
+        <columns>
+          <Column><Text text="Supplier"/></Column>
+          <Column><Text text="Product"/></Column>
+          <Column hAlign="End"><Text text="Inventory"/></Column>
+          <Column hAlign="End"><Text text="Price / g"/></Column>
+          <Column><Text text="Feed Updated"/></Column>
+          <Column><Text text="Valid For"/></Column>
+          <Column hAlign="End" width="18rem"><Text text="Actions"/></Column>
+        </columns>
+        <ColumnListItem>
+          <cells>
+            <ObjectIdentifier title="{name}" text="{= ${inventoryOraclePolicyId}.substring(0, 12) + '…'}"/>
+            <Text text="{productCode}"/>
+            <ObjectNumber number="{path: 'currentInventoryG', targetType: 'any', formatter: '.formatGrams'}" unit="g" state="Success"/>
+            <ObjectNumber number="{path: 'currentUnitPriceLovelace', targetType: 'any', formatter: '.formatPriceAda'}" state="Information"/>
+            <VBox>
+              <Text text="Warehouse: {path: 'inventoryTimestampMs', targetType: 'any', formatter: '.formatTimestamp'}"/>
+              <Text text="Pricing:   {path: 'priceTimestampMs', targetType: 'any', formatter: '.formatTimestamp'}"/>
+            </VBox>
+            <VBox>
+              <ObjectStatus text="Warehouse: {path: 'inventoryValidThroughMs', targetType: 'any', formatter: '.formatValidFor'}"
+                            state="{path: 'inventoryValidThroughMs', targetType: 'any', formatter: '.formatValidState'}"/>
+              <ObjectStatus text="Pricing:   {path: 'priceValidThroughMs', targetType: 'any', formatter: '.formatValidFor'}"
+                            state="{path: 'priceValidThroughMs', targetType: 'any', formatter: '.formatValidState'}"/>
+            </VBox>
+            <HBox justifyContent="End">
+              <Button text="Refresh Feed"
+                      icon="sap-icon://synchronize"
+                      tooltip="Push fresh oracle round (inventory + price) on-chain"
+                      press="onRefreshFeed"/>
+              <Button text="Buy"
+                      icon="sap-icon://cart"
+                      type="Emphasized"
+                      class="sapUiTinyMarginBegin"
+                      tooltip="Buy at the current oracle price (requires both feeds valid)"
+                      press="onBuy"
+                      enabled="{parts: [
+                                  {path: 'inventoryValidThroughMs', targetType: 'any'},
+                                  {path: 'priceValidThroughMs',     targetType: 'any'},
+                                  {path: 'currentInventoryG',       targetType: 'any'},
+                                  {path: 'currentUnitPriceLovelace', targetType: 'any'}
+                                ],
+                                formatter: '.formatBuyEnabled'}"/>
+            </HBox>
+          </cells>
+        </ColumnListItem>
+      </Table>
+    </content>
+  </Page>
+</mvc:View>

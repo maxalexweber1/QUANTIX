@@ -1,0 +1,59 @@
+Updater:
+  verbosity: INFO
+  reward_collect_check_interval: 180
+
+Cache:
+  enabled: false
+  ttl: 30
+
+RewardCollection:
+  trigger_amount: 500
+  reward_destination_address: "base"
+  create_collateral: false
+
+Node:
+  mnemonic: "<%= MNEMONIC %>"
+  oracle_currency: "7e3cc787cd71c68ecc08274cff9596be9e2951d106c29b901dbd081f"
+  oracle_address: "addr_test1wpk8epwpmshm4d4s3p40p9vkjhmu8e549xvwyl2njjrzkjcthysxc"
+  reward_token_hash: null
+  reward_token_name: null
+
+  feeds:
+    - feed_id: inventory
+      asset_name: "C3AS_inventory"
+      rate:
+        general_base_symbol: GRAMS-CO-HYDR-02
+        base_currency:
+          api_sources:
+            - adapter: generic-api
+              asset_a: GRAMS-CO-HYDR-02
+              asset_b: NONE
+              quote_required: false
+              sources:
+                - name: erp-b
+                  api_url: http://erp-b:8001/inventory?product_code=CO-HYDR-02
+                  json_path: ["available_g"]
+
+    - feed_id: price
+      asset_name: "C3AS_price"
+      rate:
+        general_base_symbol: LOV-PER-G-CO-HYDR-02
+        base_currency:
+          api_sources:
+            - adapter: generic-api
+              asset_a: LOV-PER-G-CO-HYDR-02
+              asset_b: NONE
+              quote_required: false
+              sources:
+                - name: erp-b
+                  api_url: http://erp-b:8001/inventory?product_code=CO-HYDR-02
+                  json_path: ["unit_price_lovelace"]
+
+ChainQuery:
+  network: PREPROD
+  blockfrost:
+    project_id: "<%= BLOCKFROST_PROJECT_ID %>"
+
+ReferenceScript:
+  # No utxo_reference: SDK falls back to address scan on Blockfrost-only.
+  address: "addr_test1wpk8epwpmshm4d4s3p40p9vkjhmu8e549xvwyl2njjrzkjcthysxc"

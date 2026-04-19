@@ -1,0 +1,24 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+
+  <ResponsivePopover
+    title="Connect Cardano Wallet"
+    placement="Bottom"
+    contentWidth="20rem">
+    <List
+      items="{wallet>/wallets}"
+      noDataText="No CIP-30 wallets detected. Install Nami, Eternl, or Lace.">
+      <StandardListItem
+        title="{wallet>name}"
+        description="CIP-30"
+        icon="sap-icon://chain-link"
+        type="Active"
+        press="onWalletSelect">
+        <customData>
+          <core:CustomData key="walletName" value="{wallet>id}"/>
+        </customData>
+      </StandardListItem>
+    </List>
+  </ResponsivePopover>
+</core:FragmentDefinition>

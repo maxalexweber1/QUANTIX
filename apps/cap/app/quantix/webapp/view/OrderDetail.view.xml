@@ -1,0 +1,11 @@
+<mvc:View
+  controllerName="quantix.controller.OrderDetail"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  height="100%">
+
+  <Page title="Order Detail" showNavButton="true" navButtonPress="onNavBack">
+    <MessageStrip text="Phase D will render order detail + status timeline here."
+                  type="Information" showIcon="true" class="sapUiSmallMargin"/>
+  </Page>
+</mvc:View>

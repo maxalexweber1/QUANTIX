@@ -1,0 +1,50 @@
+<mvc:View
+  controllerName="quantix.controller.FeedList"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  height="100%">
+
+  <Page title="Oracle Feeds" showNavButton="false">
+    <headerContent>
+      <Button icon="sap-icon://refresh" tooltip="Refresh" press="onRefresh"/>
+    </headerContent>
+
+    <content>
+      <FlexBox wrap="Wrap" class="sapUiSmallMargin"
+               items="{feeds>/cards}">
+        <Panel headerText="{feeds>supplierName} — {feeds>label}"
+               expandable="false"
+               class="sapUiSmallMargin"
+               width="22rem">
+          <content>
+            <VBox class="sapUiSmallMargin">
+              <ObjectNumber number="{feeds>displayValue}"
+                            unit="{feeds>displayUnit}"
+                            emphasized="true"
+                            state="{feeds>freshnessState}"/>
+
+              <Label text="Freshness" class="sapUiTinyMarginTop"/>
+              <ObjectStatus text="{feeds>freshnessText}"
+                            state="{feeds>freshnessState}"/>
+
+              <Label text="Last on-chain update" class="sapUiTinyMarginTop"/>
+              <Text text="{feeds>updatedText}"/>
+
+              <Label text="Coordinator wallet (data authority)" class="sapUiTinyMarginTop"/>
+              <Link text="{feeds>coordinatorShort}"
+                    href="{feeds>coordinatorUrl}"
+                    target="_blank"
+                    tooltip="{feeds>coordinatorAddr}"/>
+
+              <Label text="Oracle asset" class="sapUiTinyMarginTop"/>
+              <Text text="{feeds>assetName}"/>
+
+              <Label text="Oracle policy" class="sapUiTinyMarginTop"/>
+              <Text text="{feeds>policyShort}" tooltip="{feeds>policyId}"/>
+            </VBox>
+          </content>
+        </Panel>
+      </FlexBox>
+    </content>
+  </Page>
+</mvc:View>

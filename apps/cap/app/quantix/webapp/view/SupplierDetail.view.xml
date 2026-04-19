@@ -1,0 +1,11 @@
+<mvc:View
+  controllerName="quantix.controller.SupplierDetail"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  height="100%">
+
+  <Page title="Supplier Detail" showNavButton="true" navButtonPress="onNavBack">
+    <MessageStrip text="Phase D will render supplier detail + feed history here."
+                  type="Information" showIcon="true" class="sapUiSmallMargin"/>
+  </Page>
+</mvc:View>

@@ -1,0 +1,242 @@
+# C3-Supply local stack — D-05 architecture.
+#
+# One oracle deployment per supplier (3 total), each hosting 2 AggState
+# UTxOs distinguished by asset name (C3AS_inventory, C3AS_price) sharing
+# the same policy. Per supplier: 3 nodes signing BOTH feeds via our
+# forked multi-feed node image.
+#
+# Dual-coordinator-per-supplier (narrative: separate data authorities):
+#   node-*-1 = Warehouse/Inventory coordinator (C3AS_inventory)
+#   node-*-2 = Pricing-desk coordinator         (C3AS_price)
+#   node-*-3 = peer signer only
+#
+# Both coordinators mount the same ./secrets/supplier-X/ dir read-only
+# so each has all 3 *.feed.skey files — the validator requires a 2-of-3
+# threshold signature on the AggState update, and the coordinator collects
+# all available keys. Their own payment.skey (derived from MNEMONIC) pays tx fees,
+# which is why the two coordinators use separate wallet UTxO pools —
+# eliminating the back-to-back BadInputsUTxO race we hit with a single
+# coordinator.
+#
+# CAP + bridge are NOT started via compose — they run on the host via
+# scripts/start-all.sh (faster dev iteration; the bridge talks to the
+# nodes via localhost:810x port forwards). The commented blocks below
+# stay as documentation only.
+
+name: c3-supply
+
+networks:
+  c3-net:
+    driver: bridge
+
+services:
+  # ─── ERP mocks (one per supplier) ──────────────────────────────────
+  erp-a:
+    build: { context: ./services/supplier-erp-mock }
+    environment:
+      - ERP_PRODUCT_CODE=LI-CARB-01
+      - ERP_INITIAL_G=10000
+      - ERP_UNIT_PRICE=12000000
+      - ERP_JITTER=true
+      - ERP_JITTER_INTERVAL_S=60
+      - ERP_PRICE_FLOOR=10000000
+      - ERP_PRICE_CEIL=15000000
+      - ERP_CHAIN_WATCH=true
+      - ERP_CHAIN_WATCH_INTERVAL_S=10
+      - ERP_SUPPLIER_PAYMENT_ADDR=${SUPPLIER_A_PAYMENT_ADDR}
+      - ERP_MINT_POLICY_ID=${ORDER_MINT_POLICY_SUPPLIER_A}
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+    ports: [ "8001:8001" ]
+    networks: [c3-net]
+
+  erp-b:
+    build: { context: ./services/supplier-erp-mock }
+    environment:
+      - ERP_PRODUCT_CODE=CO-HYDR-02
+      - ERP_INITIAL_G=50000
+      - ERP_UNIT_PRICE=8000000
+      - ERP_JITTER=true
+      - ERP_JITTER_INTERVAL_S=60
+      - ERP_PRICE_FLOOR=7000000
+      - ERP_PRICE_CEIL=11000000
+      - ERP_CHAIN_WATCH=true
+      - ERP_CHAIN_WATCH_INTERVAL_S=10
+      - ERP_SUPPLIER_PAYMENT_ADDR=${SUPPLIER_B_PAYMENT_ADDR}
+      - ERP_MINT_POLICY_ID=${ORDER_MINT_POLICY_SUPPLIER_B}
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+    ports: [ "8002:8001" ]
+    networks: [c3-net]
+
+  erp-c:
+    build: { context: ./services/supplier-erp-mock }
+    environment:
+      - ERP_PRODUCT_CODE=REE-NDPR-03
+      - ERP_INITIAL_G=120000
+      - ERP_UNIT_PRICE=25000000
+      - ERP_JITTER=true
+      - ERP_JITTER_INTERVAL_S=60
+      - ERP_PRICE_FLOOR=20000000
+      - ERP_PRICE_CEIL=32000000
+      - ERP_CHAIN_WATCH=true
+      - ERP_CHAIN_WATCH_INTERVAL_S=10
+      - ERP_SUPPLIER_PAYMENT_ADDR=${SUPPLIER_C_PAYMENT_ADDR}
+      - ERP_MINT_POLICY_ID=${ORDER_MINT_POLICY_SUPPLIER_C}
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+    ports: [ "8003:8001" ]
+    networks: [c3-net]
+
+  # ─── Charli3 oracle nodes — Supplier A ─────────────────────────────
+  node-a-1:
+    build:
+      context: ./services/charli3-fork
+      dockerfile: charli3-pull-oracle-node/Dockerfile
+    image: c3-supply/charli3-node:multi-feed
+    depends_on: [erp-a]
+    environment:
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+      - MNEMONIC=${MNEMONIC_A_1}
+      - COORDINATOR_KEYS_DIR=/run/peer-skeys
+    volumes:
+      - ./services/charli3-fork/configs/supplier-a.yml:/config.yml:ro
+      - ./secrets/supplier-a:/run/peer-skeys:ro
+    ports: [ "8101:8000" ]
+    networks: [c3-net]
+
+  node-a-2:
+    image: c3-supply/charli3-node:multi-feed
+    depends_on: [node-a-1, erp-a]
+    environment:
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+      - MNEMONIC=${MNEMONIC_A_2}
+      - COORDINATOR_KEYS_DIR=/run/peer-skeys
+    volumes:
+      - ./services/charli3-fork/configs/supplier-a.yml:/config.yml:ro
+      - ./secrets/supplier-a:/run/peer-skeys:ro
+    ports: [ "8102:8000" ]
+    networks: [c3-net]
+
+  node-a-3:
+    image: c3-supply/charli3-node:multi-feed
+    depends_on: [node-a-1, erp-a]
+    environment:
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+      - MNEMONIC=${MNEMONIC_A_3}
+    volumes:
+      - ./services/charli3-fork/configs/supplier-a.yml:/config.yml:ro
+    ports: [ "8103:8000" ]
+    networks: [c3-net]
+
+  # ─── Charli3 oracle nodes — Supplier B ─────────────────────────────
+  node-b-1:
+    image: c3-supply/charli3-node:multi-feed
+    depends_on: [node-a-1, erp-b]
+    environment:
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+      - MNEMONIC=${MNEMONIC_B_1}
+      - COORDINATOR_KEYS_DIR=/run/peer-skeys
+    volumes:
+      - ./services/charli3-fork/configs/supplier-b.yml:/config.yml:ro
+      - ./secrets/supplier-b:/run/peer-skeys:ro
+    ports: [ "8201:8000" ]
+    networks: [c3-net]
+
+  node-b-2:
+    image: c3-supply/charli3-node:multi-feed
+    depends_on: [node-b-1, erp-b]
+    environment:
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+      - MNEMONIC=${MNEMONIC_B_2}
+      - COORDINATOR_KEYS_DIR=/run/peer-skeys
+    volumes:
+      - ./services/charli3-fork/configs/supplier-b.yml:/config.yml:ro
+      - ./secrets/supplier-b:/run/peer-skeys:ro
+    ports: [ "8202:8000" ]
+    networks: [c3-net]
+
+  node-b-3:
+    image: c3-supply/charli3-node:multi-feed
+    depends_on: [node-b-1, erp-b]
+    environment:
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+      - MNEMONIC=${MNEMONIC_B_3}
+    volumes:
+      - ./services/charli3-fork/configs/supplier-b.yml:/config.yml:ro
+    ports: [ "8203:8000" ]
+    networks: [c3-net]
+
+  # ─── Charli3 oracle nodes — Supplier C ─────────────────────────────
+  node-c-1:
+    image: c3-supply/charli3-node:multi-feed
+    depends_on: [node-a-1, erp-c]
+    environment:
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+      - MNEMONIC=${MNEMONIC_C_1}
+      - COORDINATOR_KEYS_DIR=/run/peer-skeys
+    volumes:
+      - ./services/charli3-fork/configs/supplier-c.yml:/config.yml:ro
+      - ./secrets/supplier-c:/run/peer-skeys:ro
+    ports: [ "8301:8000" ]
+    networks: [c3-net]
+
+  node-c-2:
+    image: c3-supply/charli3-node:multi-feed
+    depends_on: [node-c-1, erp-c]
+    environment:
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+      - MNEMONIC=${MNEMONIC_C_2}
+      - COORDINATOR_KEYS_DIR=/run/peer-skeys
+    volumes:
+      - ./services/charli3-fork/configs/supplier-c.yml:/config.yml:ro
+      - ./secrets/supplier-c:/run/peer-skeys:ro
+    ports: [ "8302:8000" ]
+    networks: [c3-net]
+
+  node-c-3:
+    image: c3-supply/charli3-node:multi-feed
+    depends_on: [node-c-1, erp-c]
+    environment:
+      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+      - NETWORK=preprod
+      - MNEMONIC=${MNEMONIC_C_3}
+    volumes:
+      - ./services/charli3-fork/configs/supplier-c.yml:/config.yml:ro
+    ports: [ "8303:8000" ]
+    networks: [c3-net]
+
+# ─── Disabled: CAP + Bridge run on host via scripts/start-all.sh ────
+# Re-enable here only if you specifically want the dockerized variant.
+#
+#  cap:
+#    image: node:20-alpine
+#    working_dir: /app
+#    volumes: [ ./:/app ]
+#    command: sh -c "corepack enable && pnpm install --frozen-lockfile=false && pnpm --filter @c3-supply/cap dev"
+#    environment:
+#      - NETWORK=${NETWORK:-preprod}
+#      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+#      - BRIDGE_URL=http://bridge:8000
+#    ports: [ "4004:4004" ]
+#    depends_on: [bridge]
+#    networks: [c3-net]
+#
+#  bridge:
+#    build: { context: ./services/charli3-bridge }
+#    environment:
+#      - BLOCKFROST_PROJECT_ID=${BLOCKFROST_PROJECT_ID}
+#      - NETWORK=${NETWORK:-preprod}
+#      - ORACLE_ADDRESSES=${ORACLE_ADDRESSES}
+#      - SUPPLIER_COORDINATORS=${SUPPLIER_COORDINATORS}
+#      - ORCHESTRATOR_VALIDITY_WINDOW_MS=${ORCHESTRATOR_VALIDITY_WINDOW_MS:-120000}
+#    ports: [ "8000:8000" ]
+#    networks: [c3-net]

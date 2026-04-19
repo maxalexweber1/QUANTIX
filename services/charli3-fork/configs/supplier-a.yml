@@ -1,0 +1,66 @@
+Updater:
+  verbosity: INFO
+  reward_collect_check_interval: 180
+
+Cache:
+  # Disabled: stale UTxO cache causes BadInputsUTxO on back-to-back ODV
+  # rounds (second submit re-references already-spent UTxOs from first).
+  enabled: false
+  ttl: 30
+
+RewardCollection:
+  trigger_amount: 500
+  reward_destination_address: "base"
+  # Disabled: periodic collateral-creation drains the wallet (each attempt is
+  # a tx + min-UTxO inflation). The submit path picks any pure-ADA UTxO
+  # >= collateral threshold on demand.
+  create_collateral: false
+
+Node:
+  mnemonic: "<%= MNEMONIC %>"
+  oracle_currency: "78adae0debdf47708f49b5bae9b3ee5eae053ce7b86874d7947ec622"
+  oracle_address: "addr_test1wqww3xgvvt09y826qq5xqj8267yvhaq7xprdeeyrhw7a6dq2fszvh"
+  reward_token_hash: null
+  reward_token_name: null
+
+  feeds:
+    - feed_id: inventory
+      asset_name: "C3AS_inventory"
+      rate:
+        general_base_symbol: GRAMS-LI-CARB-01
+        base_currency:
+          api_sources:
+            - adapter: generic-api
+              asset_a: GRAMS-LI-CARB-01
+              asset_b: NONE
+              quote_required: false
+              sources:
+                - name: erp-a
+                  api_url: http://erp-a:8001/inventory?product_code=LI-CARB-01
+                  json_path: ["available_g"]
+
+    - feed_id: price
+      asset_name: "C3AS_price"
+      rate:
+        general_base_symbol: LOV-PER-G-LI-CARB-01
+        base_currency:
+          api_sources:
+            - adapter: generic-api
+              asset_a: LOV-PER-G-LI-CARB-01
+              asset_b: NONE
+              quote_required: false
+              sources:
+                - name: erp-a
+                  api_url: http://erp-a:8001/inventory?product_code=LI-CARB-01
+                  json_path: ["unit_price_lovelace"]
+
+ChainQuery:
+  network: PREPROD
+  blockfrost:
+    project_id: "<%= BLOCKFROST_PROJECT_ID %>"
+
+ReferenceScript:
+  # No utxo_reference: SDK's get_utxo_by_ref_kupo path requires Kupo.
+  # Without it, the SDK falls back to scanning the address for any UTxO
+  # carrying a script -- works on Blockfrost-only setups.
+  address: "addr_test1wqww3xgvvt09y826qq5xqj8267yvhaq7xprdeeyrhw7a6dq2fszvh"

@@ -1,0 +1,14 @@
+.quantixWelcome {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.quantixTitle {
+  font-size: 3.5rem;
+  letter-spacing: 0.08em;
+  font-weight: 300;
+}
+
+.walletIcon {
+  border-radius: 4px;
+}

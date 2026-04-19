@@ -1,0 +1,93 @@
+# Supplier-A oracle deployment config (c3-supply / D-05).
+#
+# One oracle deployment, one policy, TWO AggState UTxOs distinguished by
+# asset name suffix (C3AS_inventory + C3AS_price) — requires the forked
+# Aiken validator (Charli3-Official/charli3-pull-oracle-contracts PR
+# /tree/c3-supply/asset-prefix) compiled to plutus.json here:
+#   services/charli3-fork/charli3-pull-oracle-contracts/plutus.json
+#
+# Deploy flow (run from the repo root with Python 3.11 + SDK installed):
+#   1. charli3 platform token mint --config services/charli3-fork/configs/deploy-supplier-a.yaml
+#   2. charli3 reference-script create --config services/charli3-fork/configs/deploy-supplier-a.yaml
+#   3. charli3 oracle deploy --config services/charli3-fork/configs/deploy-supplier-a.yaml
+#
+# After step 3: record the resulting policy_id + oracle_address into
+# `apps/cap/db/data/c3.supply-Suppliers.csv` and into .env's
+# ORACLE_ADDRESSES map.
+
+network:
+  network: "testnet"
+  blockfrost:
+    project_id: "$BLOCKFROST_PROJECT_ID"
+  # Funder mnemonic: funds all deploy transactions. Comes from
+  # secrets/funder/funder.mnemonic (gitignored).
+  wallet:
+    mnemonic: "$FUNDER_MNEMONIC"
+
+# Hackathon-simple: 1-of-1 multisig where the funder is the only party.
+# Replace with real multisig + multiple parties before going to mainnet.
+multisig:
+  # Native-script multisig address from `charli3 platform token mint`.
+  # The platform auth NFT lives at this address — `oracle deploy` looks
+  # here for it. If omitted, SDK defaults to admin_address (funder base)
+  # which would miss the NFT.
+  platform_addr: "addr_test1wz9wujyjj0trln955w9lcp4994ua4az0m28385jfrk8kaaqma2t94"
+  threshold: 1
+  parties:
+    # Funder payment VKH
+    - 72448f829314d71f646ff3a3b062badc7fd094b0453028871783e6ab
+
+tokens:
+  # Minted 2026-04-17 via `charli3 platform token mint` (tx
+  # 20faa2ff71cc36e54e282e6e4e725b22017bf51185dc19568162acab2a25eb73).
+  # Asset name: 43335041757468 ("C3PAuth").
+  platform_auth_policy: "3ae3befcef0903bcf4b7819590ed94799cd5c1e807f9027ec58ced76"
+  # ADA rewards (no custom fee token).
+  reward_token_policy: ""
+  reward_token_name: ""
+
+fees:
+  node_fee: 1000000       # 1 tADA per node per aggregation
+  platform_fee: 500000    # 0.5 tADA to platform
+
+timing:
+  pause_period: 1800000                     # 30 min
+  reward_dismissing_period: 3600000         # 1 hour
+  aggregation_liveness: 600000              # 10 min — feed stays valid
+  time_uncertainty_aggregation: 120000      # 2 min tx validity window
+  time_uncertainty_platform: 180000         # 3 min platform op window
+  iqr_multiplier: 150                       # 1.5× IQR fence
+  median_divergency_factor: 200             # 20% allowed when iqr=0
+  utxo_size_safety_buffer: 7500000          # 7.5 tADA
+
+# Two AggState UTxOs under the same policy, distinguished by asset name.
+# `aggstate_asset_suffixes` is a c3-supply SDK-fork extension — requires
+# the c3-supply/multi-aggstate branch of charli3-pull-oracle-sdk.
+reward_count: 1
+aggstate_count: 2
+aggstate_asset_suffixes:
+  - "_inventory"
+  - "_price"
+
+# Blueprint from our forked Aiken contracts.
+blueprint_path: "services/charli3-fork/charli3-pull-oracle-contracts/plutus.json"
+apply_arguments_with_aiken: true
+
+# Validator rebuilt 2026-04-17 with cospent-aggstate-name fix. Ref-script
+# recreated via tx 4a617918d0b468c80bf48aeffc80dce9c88037972462c37d62948d137ab4ec2b.
+# Script hash: 2344474c1403995f24bda3c789f359ec827e99f8aefd678274169498.
+create_reference: false
+reference_script:
+  address: "addr_test1wqww3xgvvt09y826qq5xqj8267yvhaq7xprdeeyrhw7a6dq2fszvh"
+  utxo_reference:
+    transaction_id: "4a617918d0b468c80bf48aeffc80dce9c88037972462c37d62948d137ab4ec2b"
+    output_index: 0
+
+# Supplier-A node feed VKHs (derived from secrets/supplier-a/node-{1,2,3}.feed.vkh).
+# Threshold 2-of-3 — validator requires 2 node signatures per aggregation.
+nodes:
+  feed_vkh:
+    - ee653f9f4273ae7e61f8274968bc66aa4811805e45447e6294a765f2
+    - 2cc4f34088b9354b60a20046d994013a40a397a60fd8cdc8f6167356
+    - c6281ba09134c5ea4602fc08074e47649d31ebae967afa020d8a9615
+  required_signatures: 2

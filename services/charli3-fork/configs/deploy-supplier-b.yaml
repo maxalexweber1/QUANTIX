@@ -1,0 +1,62 @@
+# Supplier-B oracle deployment config (c3-supply / D-05).
+#
+# Parallel deployment to Supplier-A: same flow, different node VKHs, fresh
+# platform NFT + ref script (OracleConfiguration is parameterised by
+# platform_auth_nft so every supplier has its own script hash).
+
+network:
+  network: "testnet"
+  blockfrost:
+    project_id: "$BLOCKFROST_PROJECT_ID"
+  wallet:
+    mnemonic: "$FUNDER_MNEMONIC"
+
+multisig:
+  # Platform NFT minted 2026-04-17 via tx f5b9a4b201a1bdf523e26814b4b70f6ae7535b91cc39b9332e7cc8b0639cf793.
+  platform_addr: "addr_test1wz9wujyjj0trln955w9lcp4994ua4az0m28385jfrk8kaaqma2t94"
+  threshold: 1
+  parties:
+    - 72448f829314d71f646ff3a3b062badc7fd094b0453028871783e6ab
+
+tokens:
+  platform_auth_policy: "95c5f6af2ed5fabb4426173e55963d58c9413b18991f0233754f9309"
+  reward_token_policy: ""
+  reward_token_name: ""
+
+fees:
+  node_fee: 1000000
+  platform_fee: 500000
+
+timing:
+  pause_period: 1800000
+  reward_dismissing_period: 3600000
+  aggregation_liveness: 600000
+  time_uncertainty_aggregation: 120000
+  time_uncertainty_platform: 180000
+  iqr_multiplier: 150
+  median_divergency_factor: 200
+  utxo_size_safety_buffer: 7500000
+
+reward_count: 1
+aggstate_count: 2
+aggstate_asset_suffixes:
+  - "_inventory"
+  - "_price"
+
+blueprint_path: "services/charli3-fork/charli3-pull-oracle-contracts/plutus.json"
+apply_arguments_with_aiken: true
+
+create_reference: false
+reference_script:
+  address: "addr_test1wpk8epwpmshm4d4s3p40p9vkjhmu8e549xvwyl2njjrzkjcthysxc"
+  utxo_reference:
+    transaction_id: "f6ce12386aab028825ab4deb12cc882b6a9bfb9c80da330756189be2c9f630bc"
+    output_index: 0
+
+# Supplier-B node feed VKHs.
+nodes:
+  feed_vkh:
+    - fb69da91be9fc4bc8e0373d3359ebbe566efc8d1af61006ad0ed1bdc
+    - a8b227be9f78b5b9d73c9761434e27a2827386010c8b573e11a93749
+    - 99f98b0b49f3b88ae3ad4dec4cae3fc40e46ad3f1d77bd6fec269055
+  required_signatures: 2

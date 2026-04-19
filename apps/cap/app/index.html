@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>QUANTIX</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0;
+      padding: 48px 32px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0b0d12;
+      color: #e6e8ee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 { margin: 0 0 4px 0; letter-spacing: -0.5px; }
+    p.tagline { color: #8a93a6; margin: 0 0 32px 0; }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      max-width: 960px;
+      width: 100%;
+    }
+    a.card {
+      display: block;
+      padding: 24px;
+      background: #151822;
+      border: 1px solid #2a2f3d;
+      border-radius: 8px;
+      color: inherit;
+      text-decoration: none;
+      transition: border-color 120ms;
+    }
+    a.card:hover { border-color: #00d4a0; }
+    a.card h2 { margin: 0 0 8px 0; font-size: 16px; }
+    a.card p { margin: 0; color: #8a93a6; font-size: 13px; }
+    h3 { margin-top: 48px; font-size: 13px; text-transform: uppercase; color: #8a93a6; letter-spacing: 1px; }
+    ul { list-style: none; padding: 0; max-width: 960px; width: 100%; }
+    ul li { padding: 8px 0; border-bottom: 1px solid #2a2f3d; font-family: ui-monospace, monospace; font-size: 12px; }
+    ul li a { color: #00d4a0; text-decoration: none; }
+    ul li a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>QUANTIX</h1>
+  <p class="tagline">Cardano-native supply-chain orders, settled on-chain via Charli3 oracles.</p>
+
+  <div class="card-grid">
+    <a class="card" href="./quantix/webapp/index.html">
+      <h2>Open App &rarr;</h2>
+      <p>Orders, suppliers, feeds — unified UI with CIP-30 wallet connect.</p>
+    </a>
+  </div>
+
+  <h3>Service endpoints</h3>
+  <ul>
+    <li><a href="/odata/v4/orders-service/$metadata">/odata/v4/orders-service/$metadata</a></li>
+    <li><a href="/odata/v4/orders-service/Orders">/odata/v4/orders-service/Orders</a></li>
+    <li><a href="/odata/v4/orders-service/Suppliers">/odata/v4/orders-service/Suppliers</a></li>
+    <li><a href="/odata/v4/cardano-transaction/">/odata/v4/cardano-transaction/</a></li>
+    <li><a href="/odata/v4/cardano-odata/">/odata/v4/cardano-odata/</a></li>
+  </ul>
+</body>
+</html>

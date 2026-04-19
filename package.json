@@ -1,0 +1,20 @@
+{
+  "name": "c3-supply",
+  "version": "0.1.0",
+  "description": "C3-Supply — Cardano Supply-Chain-Verification via Charli3 Custom Data Sources",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "start": "bash scripts/start-all.sh",
+    "cap:dev": "pnpm --filter @c3-supply/cap dev",
+    "cap:build": "pnpm --filter @c3-supply/cap build",
+    "aiken:check": "cd contracts/aiken && aiken check",
+    "aiken:build": "cd contracts/aiken && aiken build",
+    "erp:dev": "cd services/supplier-erp-mock && uvicorn supplier_erp_mock.main:app --reload --port 8001",
+    "bridge:dev": "cd services/charli3-bridge && uvicorn charli3_bridge.main:app --reload --port 8000"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  }
+}

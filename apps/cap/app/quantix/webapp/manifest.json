@@ -1,0 +1,122 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "quantix",
+    "type": "application",
+    "title": "QUANTIX-Supply Chain Procurement",
+    "applicationVersion": {
+      "version": "0.1.0"
+    },
+    "dataSources": {
+      "ordersService": {
+        "uri": "/odata/v4/orders-service/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui5": {
+    "rootView": {
+      "viewName": "quantix.view.App",
+      "type": "XML",
+      "id": "appView",
+      "async": true
+    },
+    "models": {
+      "": {
+        "dataSource": "ordersService",
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": false,
+          "groupId": "$auto"
+        }
+      },
+      "wallet": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "data": {
+            "connected": false,
+            "connecting": false,
+            "error": "",
+            "name": "",
+            "icon": "",
+            "address": "",
+            "bech32": "",
+            "vkh": "",
+            "guest": false,
+            "wallets": []
+          }
+        }
+      }
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "type": "View",
+        "viewType": "XML",
+        "viewPath": "quantix.view",
+        "controlId": "appNavContainer",
+        "controlAggregation": "pages",
+        "async": true
+      },
+      "routes": [
+        {
+          "name": "orders",
+          "pattern": "",
+          "target": "orders"
+        },
+        {
+          "name": "orderDetail",
+          "pattern": "order/{orderId}",
+          "target": "orderDetail"
+        },
+        {
+          "name": "suppliers",
+          "pattern": "suppliers",
+          "target": "suppliers"
+        },
+        {
+          "name": "supplierDetail",
+          "pattern": "supplier/{supplierId}",
+          "target": "supplierDetail"
+        },
+        {
+          "name": "feeds",
+          "pattern": "feeds",
+          "target": "feeds"
+        }
+      ],
+      "targets": {
+        "orders": {
+          "viewName": "OrderList"
+        },
+        "orderDetail": {
+          "viewName": "OrderDetail"
+        },
+        "suppliers": {
+          "viewName": "SupplierList"
+        },
+        "supplierDetail": {
+          "viewName": "SupplierDetail"
+        },
+        "feeds": {
+          "viewName": "FeedList"
+        }
+      }
+    },
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.m": {},
+        "sap.f": {},
+        "sap.ui.layout": {},
+        "sap.tnt": {},
+        "sap.ui.unified": {}
+      }
+    }
+  }
+}

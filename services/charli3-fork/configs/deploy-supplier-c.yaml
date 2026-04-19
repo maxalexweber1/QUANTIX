@@ -1,0 +1,58 @@
+# Supplier-C oracle deployment config (c3-supply / D-05).
+
+network:
+  network: "testnet"
+  blockfrost:
+    project_id: "$BLOCKFROST_PROJECT_ID"
+  wallet:
+    mnemonic: "$FUNDER_MNEMONIC"
+
+multisig:
+  # Platform NFT minted 2026-04-17 via tx 68e944cf1b6e954f2595d63865a5d39e1eaaf97296560ce596012854be9d3f2d.
+  platform_addr: "addr_test1wz9wujyjj0trln955w9lcp4994ua4az0m28385jfrk8kaaqma2t94"
+  threshold: 1
+  parties:
+    - 72448f829314d71f646ff3a3b062badc7fd094b0453028871783e6ab
+
+tokens:
+  platform_auth_policy: "0017648ca57a46cad6efe033a334a9741eb56d0d765e224b5badeae3"
+  reward_token_policy: ""
+  reward_token_name: ""
+
+fees:
+  node_fee: 1000000
+  platform_fee: 500000
+
+timing:
+  pause_period: 1800000
+  reward_dismissing_period: 3600000
+  aggregation_liveness: 600000
+  time_uncertainty_aggregation: 120000
+  time_uncertainty_platform: 180000
+  iqr_multiplier: 150
+  median_divergency_factor: 200
+  utxo_size_safety_buffer: 7500000
+
+reward_count: 1
+aggstate_count: 2
+aggstate_asset_suffixes:
+  - "_inventory"
+  - "_price"
+
+blueprint_path: "services/charli3-fork/charli3-pull-oracle-contracts/plutus.json"
+apply_arguments_with_aiken: true
+
+create_reference: false
+reference_script:
+  address: "addr_test1wp7jh3d2drrlexhmckgdjc70spsvuyemt8s77xkk0h59sds9n8kx3"
+  utxo_reference:
+    transaction_id: "f1488a103393c06bed140edc69c02050cca339cf6f1f12c776ec679f1c497660"
+    output_index: 0
+
+# Supplier-C node feed VKHs.
+nodes:
+  feed_vkh:
+    - 07012e911aaf5840a84285aabeb1cc09264ded762ef38cd0d18fd1df
+    - 6ea591a31523e1766512f7c6cc1806a0170a610ed47f0343d102c0e7
+    - ae66f84da6dcca4e0542ea4fcb567b7b13bd2d690b75d1a7f476ab81
+  required_signatures: 2

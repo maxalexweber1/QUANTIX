@@ -1,0 +1,59 @@
+Updater:
+  verbosity: INFO
+  reward_collect_check_interval: 180
+
+Cache:
+  enabled: false
+  ttl: 30
+
+RewardCollection:
+  trigger_amount: 500
+  reward_destination_address: "base"
+  create_collateral: false
+
+Node:
+  mnemonic: "<%= MNEMONIC %>"
+  oracle_currency: "dc6ffa6e4ed0ae23697d5d33e4aa0f4ac020b5c78d94209510a37ed9"
+  oracle_address: "addr_test1wp7jh3d2drrlexhmckgdjc70spsvuyemt8s77xkk0h59sds9n8kx3"
+  reward_token_hash: null
+  reward_token_name: null
+
+  feeds:
+    - feed_id: inventory
+      asset_name: "C3AS_inventory"
+      rate:
+        general_base_symbol: GRAMS-REE-NDPR-03
+        base_currency:
+          api_sources:
+            - adapter: generic-api
+              asset_a: GRAMS-REE-NDPR-03
+              asset_b: NONE
+              quote_required: false
+              sources:
+                - name: erp-c
+                  api_url: http://erp-c:8001/inventory?product_code=REE-NDPR-03
+                  json_path: ["available_g"]
+
+    - feed_id: price
+      asset_name: "C3AS_price"
+      rate:
+        general_base_symbol: LOV-PER-G-REE-NDPR-03
+        base_currency:
+          api_sources:
+            - adapter: generic-api
+              asset_a: LOV-PER-G-REE-NDPR-03
+              asset_b: NONE
+              quote_required: false
+              sources:
+                - name: erp-c
+                  api_url: http://erp-c:8001/inventory?product_code=REE-NDPR-03
+                  json_path: ["unit_price_lovelace"]
+
+ChainQuery:
+  network: PREPROD
+  blockfrost:
+    project_id: "<%= BLOCKFROST_PROJECT_ID %>"
+
+ReferenceScript:
+  # No utxo_reference: SDK falls back to address scan on Blockfrost-only.
+  address: "addr_test1wp7jh3d2drrlexhmckgdjc70spsvuyemt8s77xkk0h59sds9n8kx3"

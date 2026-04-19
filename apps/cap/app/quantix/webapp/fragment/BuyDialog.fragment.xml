@@ -1,0 +1,48 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:l="sap.ui.layout"
+  xmlns:f="sap.ui.layout.form"
+  xmlns:core="sap.ui.core">
+
+  <Dialog id="buyDialog" title="Buy at live oracle price" contentWidth="32rem">
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <ObjectHeader title="{buyOrder>/supplierName}"
+                      responsive="true"
+                      intro="Supplier">
+          <attributes>
+            <ObjectAttribute title="Live inventory" text="{= Math.round(Number(${buyOrder>/inventoryG})).toLocaleString() } g"/>
+            <ObjectAttribute title="Live unit price" text="{= (Number(${buyOrder>/unitPrice}) / 1000000).toFixed(2) } ADA / g"/>
+          </attributes>
+        </ObjectHeader>
+
+        <f:SimpleForm editable="true" layout="ResponsiveGridLayout"
+                      labelSpanXL="5" labelSpanL="5" labelSpanM="5"
+                      columnsXL="1" columnsL="1" columnsM="1">
+          <f:content>
+            <Label text="Grams" required="true"/>
+            <Input value="{buyOrder>/requestedG}"
+                   type="Number"
+                   placeholder="e.g. 500"
+                   liveChange="onBuyQuantityChange"/>
+
+            <Label text="Total payment"/>
+            <ObjectStatus text="{buyOrder>/totalLovelacePretty}" state="Information"/>
+
+            <Label text="On-chain check"/>
+            <Text text="The Plutus validator will reject this mint if another oracle round pushes price above the live value or inventory below your quantity before the tx confirms."
+                  class="sapThemeMetaText"/>
+          </f:content>
+        </f:SimpleForm>
+      </VBox>
+    </content>
+    <beginButton>
+      <Button text="Buy Now" type="Emphasized" icon="sap-icon://cart"
+              enabled="{= ${buyOrder>/requestedG} &gt; 0 &amp;&amp; ${buyOrder>/requestedG} &lt;= ${buyOrder>/inventoryG}}"
+              press="onBuyConfirm"/>
+    </beginButton>
+    <endButton>
+      <Button text="Cancel" press="onBuyCancel"/>
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,57 @@
+{
+  "name": "@c3-supply/cap",
+  "version": "0.1.0",
+  "description": "C3-Supply CAP application — Orders, Suppliers, Live Inventory via Charli3",
+  "private": true,
+  "scripts": {
+    "start": "cds-serve",
+    "dev": "cds watch",
+    "build": "cds build",
+    "deploy-db": "node scripts/deploy-db.js"
+  },
+  "dependencies": {
+    "@c3-supply/contracts-ts": "workspace:*",
+    "@c3-supply/shared": "workspace:*",
+    "@odatano/core": "^1.7.3",
+    "@sap/cds": "^9",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2",
+    "@types/express": "^4",
+    "@types/node": "^20",
+    "better-sqlite3": "^12",
+    "typescript": "^5"
+  },
+  "cds": {
+    "requires": {
+      "[development]": {
+        "auth": {
+          "kind": "dummy"
+        }
+      },
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": "db.sqlite"
+        }
+      },
+      "odatano-core": {
+        "network": "preprod",
+        "backends": [
+          "blockfrost"
+        ],
+        "blockfrostApiKey": "your_blockfrost_api_key_here",
+        "txBuilders": [
+          "buildooor"
+        ],
+        "primaryTimeoutMs": 30000,
+        "fallbackTimeoutMs": 60000,
+        "indexTtlMs": 3600000
+      }
+    }
+  },
+  "sapux": [
+    "app/quantix"
+  ]
+}

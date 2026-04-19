@@ -1,0 +1,48 @@
+<mvc:View
+  controllerName="quantix.controller.OrderList"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  height="100%">
+
+  <Page title="My Buys" showNavButton="false">
+    <headerContent>
+      <Button icon="sap-icon://refresh" tooltip="Refresh" press="onRefresh"/>
+    </headerContent>
+
+    <content>
+      <Table id="orderTable"
+             items="{ path: '/Orders', parameters: { $orderby: 'createdAt desc', $expand: 'supplier' } }"
+             updateFinished="onListUpdateFinished"
+             growing="true"
+             growingThreshold="50"
+             noDataText="No buys yet. Use the Suppliers page to place one.">
+        <columns>
+          <Column><Text text="When"/></Column>
+          <Column><Text text="Supplier"/></Column>
+          <Column hAlign="End"><Text text="Quantity (g)"/></Column>
+          <Column hAlign="End"><Text text="Price / g"/></Column>
+          <Column hAlign="End"><Text text="Paid"/></Column>
+          <Column><Text text="Status"/></Column>
+          <Column><Text text="Buy Tx"/></Column>
+        </columns>
+        <ColumnListItem type="Navigation" press="onOrderPress">
+          <cells>
+            <Text text="{path: 'createdAt', formatter: '.formatDateTime'}"/>
+            <Text text="{supplier/name}"/>
+            <ObjectNumber number="{path: 'requestedG', targetType: 'any', formatter: '.formatGrams'}" unit="g"/>
+            <ObjectNumber number="{path: 'pricePerGram', targetType: 'any', formatter: '.formatPriceAda'}"/>
+            <Text text="{path: 'paidLovelace', targetType: 'any', formatter: '.formatPaidAda'}"/>
+            <ObjectStatus text="{status}"
+                          state="{path: 'status', formatter: '.formatStatusState'}"
+                          icon="{path: 'status', formatter: '.formatStatusIcon'}"/>
+            <Link text="{= ${executeTxHash} ? ${executeTxHash}.substring(0, 10) + '…' : '—'}"
+                  href="{= ${executeTxHash} ? 'https://preprod.cardanoscan.io/transaction/' + ${executeTxHash} : ''}"
+                  target="_blank"
+                  enabled="{= !!${executeTxHash}}"/>
+          </cells>
+        </ColumnListItem>
+      </Table>
+    </content>
+  </Page>
+</mvc:View>

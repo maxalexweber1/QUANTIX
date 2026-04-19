@@ -1,0 +1,24 @@
+name = "c3-supply/order"
+version = "0.1.0"
+compiler = "v1.1.21"
+plutus = "v3"
+license = "Apache-2.0"
+description = "C3-Supply order validator. Executes against Charli3 feeds as reference input"
+
+[repository]
+user = "c3-supply"
+project = "c3-supply"
+platform = "github"
+
+[[dependencies]]
+name = "aiken-lang/stdlib"
+version = "v3.0.0"
+source = "github"
+
+# Enable once P-A confirms the package name + branch during Phase 1 Go/No-Go.
+# [[dependencies]]
+# name = "Charli3-Official/oracle-integration-aiken"
+# version = "main"
+# source = "github"
+
+[config]

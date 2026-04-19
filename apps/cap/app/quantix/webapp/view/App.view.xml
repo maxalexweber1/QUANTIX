@@ -1,0 +1,90 @@
+<mvc:View
+  controllerName="quantix.controller.App"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:tnt="sap.tnt"
+  height="100%">
+
+  <App id="rootApp" height="100%">
+
+    <!-- Welcome Screen -->
+    <Page id="welcomePage" showHeader="false" class="welcomeScreen">
+      <VBox alignItems="Center" class="sapUiMediumMarginTop quantixWelcome">
+
+        <Title text="QUANTIX" level="H1" class="sapUiTinyMarginBottom quantixTitle"/>
+        <Text text="Cardano-native supply chain procurement, settled on-chain via Charli3 oracles."
+              class="sapUiSmallMarginBottom sapThemeMetaText"/>
+
+        <Title text="Connect a Cardano wallet to get started" level="H3"
+               class="sapUiMediumMarginTop sapUiTinyMarginBottom"/>
+
+        <BusyIndicator text="Connecting to wallet..."
+                       visible="{wallet>/connecting}"
+                       class="sapUiSmallMarginTop"/>
+
+        <MessageStrip text="{wallet>/error}" type="Error" showIcon="true"
+                      showCloseButton="true"
+                      visible="{= !!${wallet>/error}}"
+                      class="sapUiSmallMarginTop"/>
+
+        <List id="welcomeWalletList"
+              items="{wallet>/wallets}"
+              mode="SingleSelectMaster"
+              selectionChange=".onWelcomeWalletSelect"
+              visible="{= !${wallet>/connecting}}"
+              noDataText="No Cardano wallets detected. Install Nami, Eternl, or Lace."
+              width="550px">
+          <CustomListItem type="Active">
+            <HBox alignItems="Center" class="sapUiSmallMargin">
+              <Image src="{wallet>icon}" width="32px" height="32px"
+                     class="sapUiSmallMarginEnd walletIcon"
+                     visible="{= !!${wallet>icon}}"/>
+              <Text text="{wallet>name}" class="sapMTextBold"/>
+            </HBox>
+          </CustomListItem>
+        </List>
+
+        <VBox alignItems="Center" class="sapUiMediumMarginTop"
+              visible="{= !${wallet>/connecting}}">
+          <Text text="or" class="sapUiTinyMarginBottom sapThemeMetaText"/>
+          <Link text="Continue as Guest (browse feeds only)" press=".onGuestLogin"
+                class="sapUiSmallMarginBottom"/>
+        </VBox>
+
+      </VBox>
+    </Page>
+
+    <!-- Main App Shell -->
+    <tnt:ToolPage id="toolPage">
+      <tnt:header>
+        <tnt:ToolHeader>
+          <Button icon="sap-icon://menu2" press="onToggleMenu" type="Transparent"/>
+          <Title text="QUANTIX" level="H4" class="sapUiSmallMarginBegin"/>
+          <ToolbarSpacer/>
+          <Button id="walletBtn"
+            text="{= ${wallet>/guest} ? 'Guest' : ${wallet>/name}}"
+            icon="{= ${wallet>/guest} ? 'sap-icon://visitor' : 'sap-icon://chain-link'}"
+            type="{= ${wallet>/guest} ? 'Default' : 'Success'}"
+            press="onWalletPress"/>
+        </tnt:ToolHeader>
+      </tnt:header>
+
+      <tnt:sideContent>
+        <tnt:SideNavigation id="sideNav" selectedKey="orders" itemSelect="onNavSelect">
+          <tnt:NavigationList>
+            <tnt:NavigationListItem text="My Buys" icon="sap-icon://sales-order" key="orders"
+              visible="{= !${wallet>/guest}}"/>
+            <tnt:NavigationListItem text="Suppliers" icon="sap-icon://supplier" key="suppliers"/>
+            <tnt:NavigationListItem text="Feeds" icon="sap-icon://line-chart" key="feeds"/>
+          </tnt:NavigationList>
+        </tnt:SideNavigation>
+      </tnt:sideContent>
+
+      <tnt:mainContents>
+        <NavContainer id="appNavContainer"/>
+      </tnt:mainContents>
+    </tnt:ToolPage>
+
+  </App>
+</mvc:View>

@@ -1,0 +1,91 @@
+# ─── CAP ────────────────────────────────────────────────────────────
+_out
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
+connection.properties
+default-*.json
+.cdsrc-private.json
+gen/
+node_modules/
+target/
+@cds-models
+
+# ─── Secrets ────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+secrets/*
+!secrets/.gitkeep
+
+# ─── Python ─────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# ─── TypeScript / JS build output ───────────────────────────────────
+*.tsbuildinfo
+packages/*/dist/
+apps/*/dist/
+
+# ─── Aiken ──────────────────────────────────────────────────────────
+contracts/aiken/build/
+contracts/aiken/.aiken/
+# Charli3 contracts fork build artifacts (plutus.json IS committed).
+services/charli3-fork/charli3-pull-oracle-contracts/build/
+services/charli3-fork/charli3-pull-oracle-contracts/.aiken/
+
+# ─── Charli3 forks — per-repo junk ──────────────────────────────────
+# Poetry / pip install outputs (each fork has its own .venv when developed
+# locally; rebuilt via `poetry install`). Egg-info and pycache excluded above.
+services/charli3-fork/*/.venv/
+services/charli3-fork/*/.pytest_cache/
+services/charli3-fork/*/dist/
+services/charli3-fork/*/artifacts/
+
+# ─── Web IDE, App Studio ────────────────────────────────────────────
+.che/
+.gen/
+
+# ─── MTA ────────────────────────────────────────────────────────────
+*_mta_build_tmp
+*.mtar
+mta_archives/
+
+# ─── OS / Misc ──────────────────────────────────────────────────────
+.DS_Store
+*.orig
+*.log
+*.iml
+*.flattened-pom.xml
+Thumbs.db
+
+# ─── IDEs (kept visible) ────────────────────────────────────────────
+.vscode
+.idea
+.claude
+
+logs/
+plan.md
+
+# ─── One-time / local-only scripts (not part of the referenced flow) ─
+scripts/charli3-shell.sh
+scripts/deploy-supplier.sh
+scripts/deploy-supplier-a.sh
+scripts/fund-nodes.py
+scripts/gen-wallets.py
+scripts/odv-first-round.py
+scripts/send-funder-to-base.py
+scripts/send-tada.py
+scripts/split-buyer-utxo.py
