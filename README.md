@@ -1,4 +1,5 @@
-# QUANTIX - C3-Supply
+![QUANTIX](datano-quantix.png)
+# QUANTIX
 
 **Delivery commitments that enforce themselves on-chain.**
 
